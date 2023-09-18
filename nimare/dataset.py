@@ -147,18 +147,12 @@ class Dataset(NiMAREBase):
         # Convert to strings
         param_strs = []
         for k, v in params.items():
-            if isinstance(v, str):
-                # Wrap string values in single quotes
-                param_str = f"{k}='{v}'"
-            else:
-                # Keep everything else as-is based on its own repr
-                param_str = f"{k}={v}"
+            param_str = f"{k}='{v}'" if isinstance(v, str) else f"{k}={v}"
             param_strs.append(param_str)
 
         params_str = ", ".join(param_strs)
         params_str = f"{len(self.ids)} experiments{', ' if params_str else ''}{params_str}"
-        rep = f"{self.__class__.__name__}({params_str})"
-        return rep
+        return f"{self.__class__.__name__}({params_str})"
 
     @property
     def ids(self):
@@ -391,8 +385,7 @@ class Dataset(NiMAREBase):
         >>> dset.get({'z_maps': ('image', 'z'), 'sample_sizes': ('metadata', 'sample_sizes')})
         >>> dset.get({'coordinates': ('coordinates', None)})
         """
-        results = {}
-        results["id"] = self.ids
+        results = {"id": self.ids}
         keep_idx = np.arange(len(self.ids), dtype=int)
         for k, vals in dict_.items():
             if vals[0] == "image":
@@ -401,16 +394,10 @@ class Dataset(NiMAREBase):
                 temp = self.get_metadata(field=vals[1])
             elif vals[0] == "coordinates":
                 dset_coord_groupby_id = dict(iter(self.coordinates.groupby("id")))
-                temp = [
-                    dset_coord_groupby_id[id_] if id_ in dset_coord_groupby_id.keys() else None
-                    for id_ in self.ids
-                ]
+                temp = [dset_coord_groupby_id.get(id_, None) for id_ in self.ids]
             elif vals[0] == "annotations":
                 dset_annot_groupby_id = dict(iter(self.annotations.groupby("id")))
-                temp = [
-                    dset_annot_groupby_id[id_] if id_ in dset_annot_groupby_id.keys() else None
-                    for id_ in self.ids
-                ]
+                temp = [dset_annot_groupby_id.get(id_, None) for id_ in self.ids]
             else:
                 raise ValueError(f"Input '{vals[0]}' not understood.")
 
@@ -464,10 +451,7 @@ class Dataset(NiMAREBase):
             ignore_columns += self._id_cols
 
         df = getattr(self, attr)
-        return_first = False
-
-        if isinstance(ids, str) and column is not None:
-            return_first = True
+        return_first = isinstance(ids, str) and column is not None
         ids = _listify(ids)
 
         available_types = [c for c in df.columns if c not in self._id_cols]
@@ -476,12 +460,7 @@ class Dataset(NiMAREBase):
                 f"{column} not found in {attr}.\nAvailable types: {', '.join(available_types)}"
             )
 
-        if column is not None:
-            if ids is not None:
-                result = df[column].loc[df["id"].isin(ids)].tolist()
-            else:
-                result = df[column].tolist()
-        else:
+        if column is None:
             if ids is not None:
                 result = {v: df[v].loc[df["id"].isin(ids)].tolist() for v in available_types}
                 result = {k: v for k, v in result.items() if any(v)}
@@ -489,10 +468,11 @@ class Dataset(NiMAREBase):
                 result = {v: df[v].tolist() for v in available_types}
             result = list(result.keys())
 
-        if return_first:
-            return result[0]
+        elif ids is not None:
+            result = df[column].loc[df["id"].isin(ids)].tolist()
         else:
-            return result
+            result = df[column].tolist()
+        return result[0] if return_first else result
 
     def get_labels(self, ids=None):
         """Extract list of labels for which studies in Dataset have annotations.
@@ -536,8 +516,7 @@ class Dataset(NiMAREBase):
         texts : :obj:`list`
             List of texts of requested type for selected IDs.
         """
-        result = self._generic_column_getter("texts", ids=ids, column=text_type)
-        return result
+        return self._generic_column_getter("texts", ids=ids, column=text_type)
 
     def get_metadata(self, ids=None, field=None):
         """Get metadata from Dataset.
@@ -556,8 +535,7 @@ class Dataset(NiMAREBase):
         metadata : :obj:`list`
             List of values of requested type for selected IDs.
         """
-        result = self._generic_column_getter("metadata", ids=ids, column=field)
-        return result
+        return self._generic_column_getter("metadata", ids=ids, column=field)
 
     def get_images(self, ids=None, imtype=None):
         """Get images of a certain type for a subset of studies in the dataset.
@@ -578,13 +556,12 @@ class Dataset(NiMAREBase):
         """
         ignore_columns = ["space"]
         ignore_columns += [c for c in self.images.columns if c.endswith("__relative")]
-        result = self._generic_column_getter(
+        return self._generic_column_getter(
             "images",
             ids=ids,
             column=imtype,
             ignore_columns=ignore_columns,
         )
-        return result
 
     def get_studies_by_label(self, labels=None, label_threshold=0.001):
         """Extract list of studies with a given label.
@@ -616,18 +593,18 @@ class Dataset(NiMAREBase):
         elif not isinstance(labels, list):
             raise ValueError(f"Argument 'labels' cannot be {type(labels)}")
 
-        missing_labels = [label for label in labels if label not in self.annotations.columns]
-        if missing_labels:
+        if missing_labels := [
+            label for label in labels if label not in self.annotations.columns
+        ]:
             raise ValueError(f"Missing label(s): {', '.join(missing_labels)}")
 
         temp_annotations = self.annotations[self._id_cols + labels]
         found_rows = (temp_annotations[labels] >= label_threshold).all(axis=1)
-        if any(found_rows):
-            found_ids = temp_annotations.loc[found_rows, "id"].tolist()
-        else:
-            found_ids = []
-
-        return found_ids
+        return (
+            temp_annotations.loc[found_rows, "id"].tolist()
+            if any(found_rows)
+            else []
+        )
 
     def get_studies_by_mask(self, mask):
         """Extract list of studies with at least one coordinate in mask.
@@ -654,8 +631,7 @@ class Dataset(NiMAREBase):
         mask_ijk = np.vstack(np.where(mask.get_fdata())).T
         distances = cdist(mask_ijk, dset_ijk)
         distances = np.any(distances == 0, axis=0)
-        found_ids = list(self.coordinates.loc[distances, "id"].unique())
-        return found_ids
+        return list(self.coordinates.loc[distances, "id"].unique())
 
     def get_studies_by_coordinate(self, xyz, r=20):
         """Extract list of studies with at least one focus within radius of requested coordinates.
@@ -679,5 +655,4 @@ class Dataset(NiMAREBase):
         assert xyz.shape[1] == 3 and xyz.ndim == 2
         distances = cdist(xyz, self.coordinates[["x", "y", "z"]].values)
         distances = np.any(distances <= r, axis=0)
-        found_ids = list(self.coordinates.loc[distances, "id"].unique())
-        return found_ids
+        return list(self.coordinates.loc[distances, "id"].unique())

@@ -691,16 +691,7 @@ class SCALE(CBMAEstimator):
         else:
             sample_size_str = ""
 
-        description = (
-            "A specific coactivation likelihood estimation (SCALE) meta-analysis "
-            "\\citep{langner2014meta} was performed with NiMARE "
-            f"{__version__} "
-            "(RRID:SCR_017398; \\citealt{Salo2023}), with "
-            f"{self.n_iters} iterations. "
-            f"The input dataset included {self.inputs_['coordinates'].shape[0]} foci from "
-            f"{len(self.inputs_['id'])} experiments{sample_size_str}."
-        )
-        return description
+        return f"A specific coactivation likelihood estimation (SCALE) meta-analysis \\citep{langner2014meta} was performed with NiMARE {__version__} (RRID:SCR_017398; \\citealt{Salo2023}), with {self.n_iters} iterations. The input dataset included {self.inputs_['coordinates'].shape[0]} foci from {len(self.inputs_['id'])} experiments{sample_size_str}."
 
     @use_memmap(LGR, n_files=2)
     def _fit(self, dataset):

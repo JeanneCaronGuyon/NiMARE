@@ -123,30 +123,51 @@ def ale_sleuth_workflow(
         prefix, _ = os.path.splitext(base)
         prefix += "_"
     elif not prefix.endswith("_"):
-        prefix = prefix + "_"
+        prefix = f"{prefix}_"
 
     LGR.info("Saving output maps...")
     if not sleuth_file2:
         cres.save_maps(output_dir=output_dir, prefix=prefix)
-        count_df.to_csv(os.path.join(output_dir, prefix + "_clust.tsv"), index=False, sep="\t")
-        copyfile(sleuth_file, os.path.join(output_dir, prefix + "input_coordinates.txt"))
+        count_df.to_csv(
+            os.path.join(output_dir, f"{prefix}_clust.tsv"),
+            index=False,
+            sep="\t",
+        )
+        copyfile(
+            sleuth_file,
+            os.path.join(output_dir, f"{prefix}input_coordinates.txt"),
+        )
 
     else:
-        prefix1 = os.path.splitext(os.path.basename(sleuth_file))[0] + "_"
-        prefix2 = os.path.splitext(os.path.basename(sleuth_file2))[0] + "_"
-        prefix3 = prefix + "subtraction_"
+        prefix1 = f"{os.path.splitext(os.path.basename(sleuth_file))[0]}_"
+        prefix2 = f"{os.path.splitext(os.path.basename(sleuth_file2))[0]}_"
+        prefix3 = f"{prefix}subtraction_"
         cres1.save_maps(output_dir=output_dir, prefix=prefix1)
-        count_df1.to_csv(os.path.join(output_dir, prefix1 + "_clust.tsv"), index=False, sep="\t")
+        count_df1.to_csv(
+            os.path.join(output_dir, f"{prefix1}_clust.tsv"),
+            index=False,
+            sep="\t",
+        )
         cres2.save_maps(output_dir=output_dir, prefix=prefix2)
-        count_df2.to_csv(os.path.join(output_dir, prefix2 + "_clust.tsv"), index=False, sep="\t")
+        count_df2.to_csv(
+            os.path.join(output_dir, f"{prefix2}_clust.tsv"),
+            index=False,
+            sep="\t",
+        )
         sres.save_maps(output_dir=output_dir, prefix=prefix3)
-        copyfile(sleuth_file, os.path.join(output_dir, prefix + "group1_input_coordinates.txt"))
-        copyfile(sleuth_file2, os.path.join(output_dir, prefix + "group2_input_coordinates.txt"))
+        copyfile(
+            sleuth_file,
+            os.path.join(output_dir, f"{prefix}group1_input_coordinates.txt"),
+        )
+        copyfile(
+            sleuth_file2,
+            os.path.join(output_dir, f"{prefix}group2_input_coordinates.txt"),
+        )
 
-    with open(os.path.join(output_dir, prefix + "boilerplate.txt"), "w") as fo:
+    with open(os.path.join(output_dir, f"{prefix}boilerplate.txt"), "w") as fo:
         fo.write(boilerplate)
 
-    with open(os.path.join(output_dir, prefix + "references.bib"), "w") as fo:
+    with open(os.path.join(output_dir, f"{prefix}references.bib"), "w") as fo:
         fo.write(bibtex)
 
     LGR.info("Workflow completed.")

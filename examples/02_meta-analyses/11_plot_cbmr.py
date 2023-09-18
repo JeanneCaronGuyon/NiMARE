@@ -24,6 +24,7 @@ see the
 `online course <https://www.coursera.org/lecture/functional-mri-2/module-3-meta-analysis-Vd4zz>`_
 or a `brief overview <https://libguides.princeton.edu/neuroimaging_meta>`_.
 """
+
 import numpy as np
 import scipy
 from nilearn.plotting import plot_stat_map
@@ -368,7 +369,9 @@ plot_stat_map(
     title="GLH_groups_0",
     threshold=scipy.stats.norm.isf(0.4),
 )
-print("The contrast matrix of GLH_0 is {}".format(contrast_result.metadata["GLH_groups_0"]))
+print(
+    f'The contrast matrix of GLH_0 is {contrast_result.metadata["GLH_groups_0"]}'
+)
 
 ###############################################################################
 # GLH testing for study-level moderators
@@ -380,14 +383,10 @@ t_con_moderators = inference.create_contrast(contrast_name, source="moderators")
 contrast_result = inference.transform(t_con_moderators=t_con_moderators)
 print(contrast_result.tables["moderators_regression_coef"])
 print(
-    "P-values of moderator effects `sample_sizes` is {}".format(
-        contrast_result.tables["p_standardized_sample_sizes"]
-    )
+    f'P-values of moderator effects `sample_sizes` is {contrast_result.tables["p_standardized_sample_sizes"]}'
 )
 print(
-    "P-value of moderator effects `avg_age` is {}".format(
-        contrast_result.tables["p_standardized_avg_age"]
-    )
+    f'P-value of moderator effects `avg_age` is {contrast_result.tables["p_standardized_avg_age"]}'
 )
 
 ###############################################################################
@@ -403,9 +402,7 @@ t_con_moderators = inference.create_contrast(
 )
 contrast_result = inference.transform(t_con_moderators=t_con_moderators)
 print(
-    "P-values of difference in two moderator effectors (`sample_size-avg_age`) is {}".format(
-        contrast_result.tables["p_standardized_sample_sizes-standardized_avg_age"]
-    )
+    f'P-values of difference in two moderator effectors (`sample_size-avg_age`) is {contrast_result.tables["p_standardized_sample_sizes-standardized_avg_age"]}'
 )
 
 ###############################################################################

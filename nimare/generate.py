@@ -192,9 +192,8 @@ def _create_source(foci, sample_sizes, space="MNI"):
     source : :obj:`dict`
         study information in nimads format
     """
-    source = {}
-    for sample_size, (study, study_foci) in zip(sample_sizes, foci.items()):
-        source[f"study-{study}"] = {
+    return {
+        f"study-{study}": {
             "contrasts": {
                 "1": {
                     "coords": {
@@ -207,8 +206,8 @@ def _create_source(foci, sample_sizes, space="MNI"):
                 }
             }
         }
-
-    return source
+        for sample_size, (study, study_foci) in zip(sample_sizes, foci.items())
+    }
 
 
 def _create_foci(foci, foci_percentage, fwhm, n_studies, n_noise_foci, rng, space):

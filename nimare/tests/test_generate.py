@@ -225,10 +225,7 @@ def test_create_coordinate_dataset(kwargs, expectation):
         assert isinstance(dataset, Dataset)
         assert len(dataset.ids) == kwargs["n_studies"]
         # test if the number of observed coordinates in the dataset is correct
-        if _array_like(kwargs["foci"]):
-            n_foci = len(kwargs["foci"])
-        else:
-            n_foci = kwargs["foci"]
+        n_foci = len(kwargs["foci"]) if _array_like(kwargs["foci"]) else kwargs["foci"]
         expected_coordinate_number = max(
             kwargs["n_studies"],
             (kwargs["n_studies"] * n_foci) + (kwargs["n_studies"] * kwargs["n_noise_foci"]),

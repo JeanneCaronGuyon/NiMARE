@@ -69,11 +69,9 @@ def inference_results(testdata_cbmr_simulated, cbmr_result):
         ["standardized_sample_sizes-standardized_avg_age"],
         source="moderators",
     )
-    contrast_result = inference.transform(
+    return inference.transform(
         t_con_groups=t_con_groups, t_con_moderators=t_con_moderators
     )
-
-    return contrast_result
 
 
 @pytest.fixture(
@@ -181,7 +179,7 @@ def test_CBMREstimator_update(testdata_cbmr_simulated):
     optimizer = torch.optim.LBFGS(cbmr.model.parameters(), cbmr.lr)
     # load dataset info to torch.tensor
     if cbmr.moderators:
-        moderators_by_group_tensor = dict()
+        moderators_by_group_tensor = {}
         for group in cbmr.model.groups:
             moderators_tensor = torch.tensor(
                 cbmr.inputs_["moderators_by_group"][group],
@@ -191,7 +189,7 @@ def test_CBMREstimator_update(testdata_cbmr_simulated):
             moderators_by_group_tensor[group] = moderators_tensor
     else:
         moderators_by_group_tensor = None
-    foci_per_voxel_tensor, foci_per_study_tensor = dict(), dict()
+    foci_per_voxel_tensor, foci_per_study_tensor = {}, {}
     for group in cbmr.model.groups:
         group_foci_per_voxel_tensor = torch.tensor(
             cbmr.inputs_["foci_per_voxel"][group], dtype=torch.float64, device=cbmr.device

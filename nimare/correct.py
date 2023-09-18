@@ -81,12 +81,11 @@ class Corrector(NiMAREBase):
                 f"\tAvailable native methods: {', '.join(corr_methods)}\n"
                 f"\tAvailable estimator methods: {', '.join(est_methods)}"
             )
-        # Check required maps
-        # for cbmr approach, we have customized name for groupwise p maps
-        p_map_cbmr = tuple(
-            [m for m in result.maps.keys() if m.startswith("p_") and "_corr-" not in m]
-        )
-        if len(p_map_cbmr) > 0:
+        if p_map_cbmr := tuple(
+            m
+            for m in result.maps.keys()
+            if m.startswith("p_") and "_corr-" not in m
+        ):
             self._required_maps = p_map_cbmr
         for rm in self._required_maps:
             if result.maps.get(rm) is None:
@@ -192,7 +191,7 @@ class Corrector(NiMAREBase):
         # Update corrected map names and add them to maps dict
         corr_maps = {(k + self._name_suffix): v for k, v in corr_maps.items()}
         result.maps.update(corr_maps)
-        result.description_ += " " + description
+        result.description_ += f" {description}"
 
         corr_tables = {(k + self._name_suffix): v for k, v in corr_tables.items()}
         result.tables.update(corr_tables)

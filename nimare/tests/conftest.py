@@ -67,8 +67,7 @@ def testdata_cbma_full():
     Same as above, except returns all coords, not just one per study.
     """
     dset_file = os.path.join(get_test_data_path(), "test_pain_dataset.json")
-    dset = nimare.dataset.Dataset(dset_file)
-    return dset
+    return nimare.dataset.Dataset(dset_file)
 
 
 @pytest.fixture(scope="session")
@@ -107,10 +106,9 @@ def testdata_cbmr_simulated():
 @pytest.fixture(scope="session")
 def testdata_laird():
     """Load data from dataset into global variables."""
-    testdata_laird = nimare.dataset.Dataset(
+    return nimare.dataset.Dataset(
         os.path.join(get_test_data_path(), "neurosynth_laird_studies.json")
     )
-    return testdata_laird
 
 
 @pytest.fixture(scope="session")

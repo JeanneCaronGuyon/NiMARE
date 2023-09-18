@@ -80,33 +80,30 @@ def _fetch_database(search_pairs, database_url, out_dir, overwrite=False):
         feature_dicts = database["features"]
         for feature_dict in feature_dicts:
             features_file = feature_dict["features"]
-            # Other files associated with features have subset of entities,
-            # so unnecessary to search them if we assume that the hard-coded manifest is valid.
             if not _find_entities(features_file, search_pairs):
                 continue
+            out_coordinates_file = op.join(out_dir, coordinates_file)
+            out_metadata_file = op.join(out_dir, metadata_file)
+            out_feature_dict = {k: op.join(out_dir, v) for k, v in feature_dict.items()}
+
+            db_found = [
+                i_db
+                for i_db, db_dct in enumerate(found_databases)
+                if db_dct["coordinates"] == out_coordinates_file
+            ]
+            if len(db_found):
+                assert len(db_found) == 1
+
+                found_databases[db_found[0]]["features"].append(out_feature_dict)
             else:
-                out_coordinates_file = op.join(out_dir, coordinates_file)
-                out_metadata_file = op.join(out_dir, metadata_file)
-                out_feature_dict = {k: op.join(out_dir, v) for k, v in feature_dict.items()}
-
-                db_found = [
-                    i_db
-                    for i_db, db_dct in enumerate(found_databases)
-                    if db_dct["coordinates"] == out_coordinates_file
-                ]
-                if len(db_found):
-                    assert len(db_found) == 1
-
-                    found_databases[db_found[0]]["features"].append(out_feature_dict)
-                else:
-                    found_databases.append(
-                        {
-                            "coordinates": out_coordinates_file,
-                            "metadata": out_metadata_file,
-                            "features": [out_feature_dict],
-                        }
-                    )
-                found_files += [coordinates_file, metadata_file, *feature_dict.values()]
+                found_databases.append(
+                    {
+                        "coordinates": out_coordinates_file,
+                        "metadata": out_metadata_file,
+                        "features": [out_feature_dict],
+                    }
+                )
+            found_files += [coordinates_file, metadata_file, *feature_dict.values()]
 
     found_files = sorted(list(set(found_files)))
     for found_file in found_files:
@@ -124,11 +121,11 @@ def _fetch_database(search_pairs, database_url, out_dir, overwrite=False):
 
             block_size = 8192
             while True:
-                buffer = u.read(block_size)
-                if not buffer:
-                    break
-                fo.write(buffer)
+                if buffer := u.read(block_size):
+                    fo.write(buffer)
 
+                else:
+                    break
     return found_databases
 
 
@@ -188,9 +185,7 @@ def fetch_neurosynth(data_dir=None, version="7", overwrite=False, **kwargs):
     kwargs["data"] = dataset_name
     kwargs["version"] = version
 
-    found_databases = _fetch_database(kwargs, URL, data_dir, overwrite=overwrite)
-
-    return found_databases
+    return _fetch_database(kwargs, URL, data_dir, overwrite=overwrite)
 
 
 def fetch_neuroquery(data_dir=None, version="1", overwrite=False, **kwargs):
@@ -239,9 +234,7 @@ def fetch_neuroquery(data_dir=None, version="1", overwrite=False, **kwargs):
     kwargs["data"] = dataset_name
     kwargs["version"] = version
 
-    found_databases = _fetch_database(kwargs, URL, data_dir, overwrite=overwrite)
-
-    return found_databases
+    return _fetch_database(kwargs, URL, data_dir, overwrite=overwrite)
 
 
 def download_nidm_pain(data_dir=None, overwrite=False):
@@ -328,7 +321,7 @@ def download_cognitive_atlas(data_dir=None, overwrite=False):
 
     ids_file = op.join(data_dir, "cogat_aliases.csv")
     rels_file = op.join(data_dir, "cogat_relationships.csv")
-    if overwrite or not all([op.isfile(f) for f in [ids_file, rels_file]]):
+    if overwrite or not all(op.isfile(f) for f in [ids_file, rels_file]):
         concepts = get_concept(silent=True).pandas
         tasks = get_task(silent=True).pandas
         disorders = get_disorder(silent=True).pandas
@@ -382,10 +375,7 @@ def download_cognitive_atlas(data_dir=None, overwrite=False):
             relationship_list.append(row)
             disorder = get_disorder(id=id_, silent=True).json
             for rel in disorder["disorders"]:
-                if rel["relationship"] == "ISA":
-                    rel_type = "isA"
-                else:
-                    rel_type = rel["relationship"]
+                rel_type = "isA" if rel["relationship"] == "ISA" else rel["relationship"]
                 row = [id_, rel["id"], rel_type]
                 relationship_list.append(row)
 
@@ -401,9 +391,7 @@ def download_cognitive_atlas(data_dir=None, overwrite=False):
         relationships = relationships.reset_index(drop=True)
         aliases.to_csv(ids_file, index=False)
         relationships.to_csv(rels_file, index=False)
-    out_dict = {"ids": ids_file, "relationships": rels_file}
-
-    return out_dict
+    return {"ids": ids_file, "relationships": rels_file}
 
 
 def download_abstracts(dataset, email):

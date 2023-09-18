@@ -111,7 +111,7 @@ class GeneralLinearModelEstimator(torch.nn.Module):
         Default is uniform distribution between -0.01 and 0.01.
         """
         # initialization for spatial regression coefficients
-        spatial_coef_linears = dict()
+        spatial_coef_linears = {}
         for group in self.groups:
             spatial_coef_linear_group = torch.nn.Linear(
                 self.spatial_coef_dim, 1, bias=False
@@ -227,7 +227,7 @@ class GeneralLinearModelEstimator(torch.nn.Module):
             coef_spline_bases, dtype=torch.float64, device=self.device
         )
         if moderators_by_group:
-            moderators_by_group_tensor = dict()
+            moderators_by_group_tensor = {}
             for group in self.groups:
                 moderators_tensor = torch.tensor(
                     moderators_by_group[group], dtype=torch.float64, device=self.device
@@ -235,7 +235,7 @@ class GeneralLinearModelEstimator(torch.nn.Module):
                 moderators_by_group_tensor[group] = moderators_tensor
         else:
             moderators_by_group_tensor = None
-        foci_per_voxel_tensor, foci_per_study_tensor = dict(), dict()
+        foci_per_voxel_tensor, foci_per_study_tensor = {}, {}
         for group in self.groups:
             group_foci_per_voxel_tensor = torch.tensor(
                 foci_per_voxel[group], dtype=torch.float64, device=self.device
@@ -272,7 +272,7 @@ class GeneralLinearModelEstimator(torch.nn.Module):
 
     def extract_optimized_params(self, coef_spline_bases, moderators_by_group):
         """Extract optimized regression coefficient of study-level moderators from the model."""
-        spatial_regression_coef, spatial_intensity_estimation = dict(), dict()
+        spatial_regression_coef, spatial_intensity_estimation = {}, {}
         for group in self.groups:
             # Extract optimized spatial regression coefficients from the model
             group_spatial_coef_linear_weight = self.spatial_coef_linears[group].weight
@@ -290,7 +290,7 @@ class GeneralLinearModelEstimator(torch.nn.Module):
 
         # Extract optimized regression coefficient of study-level moderators from the model
         if self.moderators_coef_dim:
-            moderators_effect = dict()
+            moderators_effect = {}
             moderators_coef = self.moderators_linear.weight
             moderators_coef = moderators_coef.cpu().detach().numpy()
             for group in self.groups:
@@ -315,11 +315,11 @@ class GeneralLinearModelEstimator(torch.nn.Module):
         For log spatial intensity, we use the delta method to estimate its standard error.
         For models with over-dispersion parameter, we also estimate its standard error.
         """
-        spatial_regression_coef_se, log_spatial_intensity_se, spatial_intensity_se = (
-            dict(),
-            dict(),
-            dict(),
-        )
+        (
+            spatial_regression_coef_se,
+            log_spatial_intensity_se,
+            spatial_intensity_se,
+        ) = ({}, {}, {})
         for group in self.groups:
             group_foci_per_voxel = torch.tensor(
                 foci_per_voxel[group], dtype=torch.float64, device=self.device
@@ -420,13 +420,13 @@ class GeneralLinearModelEstimator(torch.nn.Module):
             self.log_spatial_intensity_se,
             self.spatial_intensity_se,
         )
-        if any([param is None for param in params]):
+        if any(param is None for param in params):
             raise ValueError("Run fit first")
-        tables = dict()
-        # Extract optimized regression coefficients from model and store them in 'tables'
-        tables["spatial_regression_coef"] = pd.DataFrame.from_dict(
-            self.spatial_regression_coef, orient="index"
-        )
+        tables = {
+            "spatial_regression_coef": pd.DataFrame.from_dict(
+                self.spatial_regression_coef, orient="index"
+            )
+        }
         maps = self.spatial_intensity_estimation
         if self.moderators_coef_dim:
             tables["moderators_regression_coef"] = pd.DataFrame(
@@ -688,7 +688,7 @@ class OverdispersionModelEstimator(GeneralLinearModelEstimator):
 
         Default is 1e-2.
         """
-        overdispersion = dict()
+        overdispersion = {}
         for group in self.groups:
             # initialization for alpha
             overdispersion_init_group = torch.tensor(1e-2).double()
@@ -714,7 +714,7 @@ class OverdispersionModelEstimator(GeneralLinearModelEstimator):
         maps, tables = super().inference_outcome(
             coef_spline_bases, moderators_by_group, foci_per_voxel, foci_per_study
         )
-        overdispersion_param = dict()
+        overdispersion_param = {}
         for group in self.groups:
             group_overdispersion = self.overdispersion[group]
             group_overdispersion = group_overdispersion.cpu().detach().numpy()
@@ -756,16 +756,14 @@ class PoissonEstimator(GeneralLinearModelEstimator):
             log_mu_moderators = torch.tensor(
                 [0] * n_study, dtype=torch.float64, device=device
             ).reshape((-1, 1))
-            mu_moderators = torch.exp(log_mu_moderators)
         else:
             log_mu_moderators = torch.matmul(group_moderators, moderators_coef.T)
-            mu_moderators = torch.exp(log_mu_moderators)
-        log_l = (
+        mu_moderators = torch.exp(log_mu_moderators)
+        return (
             torch.sum(torch.mul(group_foci_per_voxel, log_mu_spatial))
             + torch.sum(torch.mul(group_foci_per_study, log_mu_moderators))
             - torch.sum(mu_spatial) * torch.sum(mu_moderators)
         )
-        return log_l
 
     def _log_likelihood_mult_group(
         self,
@@ -789,10 +787,6 @@ class PoissonEstimator(GeneralLinearModelEstimator):
             log_moderator_effect = [
                 torch.matmul(group_moderator, moderator_coef) for group_moderator in moderators
             ]
-            moderator_effect = [
-                torch.exp(group_log_moderator_effect)
-                for group_log_moderator_effect in log_moderator_effect
-            ]
         else:
             log_moderator_effect = [
                 torch.tensor(
@@ -800,18 +794,18 @@ class PoissonEstimator(GeneralLinearModelEstimator):
                 ).reshape((-1, 1))
                 for foci_per_study_i in foci_per_study
             ]
-            moderator_effect = [
-                torch.exp(group_log_moderator_effect)
-                for group_log_moderator_effect in log_moderator_effect
-            ]
-        log_l = 0
-        for i in range(n_groups):
-            log_l += (
+        moderator_effect = [
+            torch.exp(group_log_moderator_effect)
+            for group_log_moderator_effect in log_moderator_effect
+        ]
+        return sum(
+            (
                 torch.sum(foci_per_voxel[i] * log_spatial_intensity[i])
                 + torch.sum(foci_per_study[i] * log_moderator_effect[i])
                 - torch.sum(spatial_intensity[i]) * torch.sum(moderator_effect[i])
             )
-        return log_l
+            for i in range(n_groups)
+        )
 
     def forward(self, coef_spline_bases, moderators, foci_per_voxel, foci_per_study):
         """Define the loss function (nagetive log-likelihood function) for Poisson model.
@@ -899,13 +893,12 @@ class NegativeBinomialEstimator(OverdispersionModelEstimator):
         mu_spatial = torch.exp(log_mu_spatial)
         if moderators_coef is not None:
             log_mu_moderators = torch.matmul(group_moderators, moderators_coef.T)
-            mu_moderators = torch.exp(log_mu_moderators)
         else:
             n_study, _ = group_foci_per_study.shape
             log_mu_moderators = torch.tensor(
                 [0] * n_study, dtype=torch.float64, device=device
             ).reshape((-1, 1))
-            mu_moderators = torch.exp(log_mu_moderators)
+        mu_moderators = torch.exp(log_mu_moderators)
         # parameter of a NB variable to approximate a sum of NB variables
         r = (
             1
@@ -918,16 +911,13 @@ class NegativeBinomialEstimator(OverdispersionModelEstimator):
             + torch.sum(mu_moderators)
             / (group_overdispersion * mu_spatial * torch.sum(mu_moderators**2))
         )
-        # log-likelihood (moment matching approach)
-        log_l = torch.sum(
+        return torch.sum(
             torch.lgamma(group_foci_per_voxel + r)
             - torch.lgamma(group_foci_per_voxel + 1)
             - torch.lgamma(r)
             + r * torch.log(1 - p)
             + group_foci_per_voxel * torch.log(p)
         )
-
-        return log_l
 
     def _log_likelihood_mult_group(
         self,
@@ -952,10 +942,6 @@ class NegativeBinomialEstimator(OverdispersionModelEstimator):
             log_moderator_effect = [
                 torch.matmul(group_moderator, moderator_coef) for group_moderator in moderators
             ]
-            moderator_effect = [
-                torch.exp(group_log_moderator_effect)
-                for group_log_moderator_effect in log_moderator_effect
-            ]
         else:
             log_moderator_effect = [
                 torch.tensor(
@@ -963,10 +949,10 @@ class NegativeBinomialEstimator(OverdispersionModelEstimator):
                 ).reshape((-1, 1))
                 for foci_per_study in foci_per_study
             ]
-            moderator_effect = [
-                torch.exp(group_log_moderator_effect)
-                for group_log_moderator_effect in log_moderator_effect
-            ]
+        moderator_effect = [
+            torch.exp(group_log_moderator_effect)
+            for group_log_moderator_effect in log_moderator_effect
+        ]
         # After similification, we have:
         # r' = 1/alpha * sum(mu^Z_i)^2 / sum((mu^Z_i)^2)
         # p'_j = 1 / (1 + sum(mu^Z_i) / (alpha * mu^X_j * sum((mu^Z_i)^2)
@@ -1073,26 +1059,25 @@ class ClusteredNegativeBinomialEstimator(OverdispersionModelEstimator):
         mu_spatial = torch.exp(log_mu_spatial)
         if moderators_coef is not None:
             log_mu_moderators = torch.matmul(group_moderators, moderators_coef.T)
-            mu_moderators = torch.exp(log_mu_moderators)
         else:
             n_study, _ = group_foci_per_study.shape
             log_mu_moderators = torch.tensor(
                 [0] * n_study, dtype=torch.float64, device=device
             ).reshape((-1, 1))
-            mu_moderators = torch.exp(log_mu_moderators)
+        mu_moderators = torch.exp(log_mu_moderators)
         mu_sum_per_study = torch.sum(mu_spatial) * mu_moderators
         group_n_study, _ = group_foci_per_study.shape
 
-        log_l = (
+        return (
             group_n_study * v * torch.log(v)
             - group_n_study * torch.lgamma(v)
             + torch.sum(torch.lgamma(group_foci_per_study + v))
-            - torch.sum((group_foci_per_study + v) * torch.log(mu_sum_per_study + v))
+            - torch.sum(
+                (group_foci_per_study + v) * torch.log(mu_sum_per_study + v)
+            )
             + torch.sum(group_foci_per_voxel * log_mu_spatial)
             + torch.sum(group_foci_per_study * log_mu_moderators)
         )
-
-        return log_l
 
     def _log_likelihood_mult_group(
         self,
@@ -1119,10 +1104,6 @@ class ClusteredNegativeBinomialEstimator(OverdispersionModelEstimator):
             log_moderator_effect = [
                 torch.matmul(group_moderator, moderator_coef) for group_moderator in moderators
             ]
-            moderator_effect = [
-                torch.exp(group_log_moderator_effect)
-                for group_log_moderator_effect in log_moderator_effect
-            ]
         else:
             log_moderator_effect = [
                 torch.tensor(
@@ -1130,27 +1111,29 @@ class ClusteredNegativeBinomialEstimator(OverdispersionModelEstimator):
                 ).reshape((-1, 1))
                 for foci_per_study in foci_per_study
             ]
-            moderator_effect = [
-                torch.exp(group_log_moderator_effect)
-                for group_log_moderator_effect in log_moderator_effect
-            ]
+        moderator_effect = [
+            torch.exp(group_log_moderator_effect)
+            for group_log_moderator_effect in log_moderator_effect
+        ]
         mu_sum_per_study = [
             torch.sum(spatial_intensity[i]) * moderator_effect[i] for i in range(n_groups)
         ]
         n_study_list = [group_foci_per_study.shape[0] for group_foci_per_study in foci_per_study]
 
-        log_l = 0
-        for i in range(n_groups):
-            log_l += (
+        return sum(
+            (
                 n_study_list[i] * v[i] * torch.log(v[i])
                 - n_study_list[i] * torch.lgamma(v[i])
                 + torch.sum(torch.lgamma(foci_per_study[i] + v[i]))
-                - torch.sum((foci_per_study[i] + v[i]) * torch.log(mu_sum_per_study[i] + v[i]))
+                - torch.sum(
+                    (foci_per_study[i] + v[i])
+                    * torch.log(mu_sum_per_study[i] + v[i])
+                )
                 + torch.sum(foci_per_voxel[i] * log_spatial_intensity[i])
                 + torch.sum(foci_per_study[i] * log_moderator_effect[i])
             )
-
-        return log_l
+            for i in range(n_groups)
+        )
 
     def forward(self, coef_spline_bases, moderators, foci_per_voxel, foci_per_study):
         """Define the loss function (nagetive log-likelihood function) for Clustered NB model.

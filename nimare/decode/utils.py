@@ -38,6 +38,4 @@ def weight_priors(topic_priors, prior_weight):
     uniform /= np.sum(uniform)
     uniform *= 1 - prior_weight
 
-    # Weight priors with uniform base
-    weighted_priors = topic_priors + uniform
-    return weighted_priors
+    return topic_priors + uniform

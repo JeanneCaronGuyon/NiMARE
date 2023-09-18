@@ -300,14 +300,7 @@ class ALEKernel(KernelTransformer):
                 "\\cite{eickhoff2012activation}"
             )
 
-        description = (
-            "An ALE kernel \\citep{eickhoff2012activation} was used to generate study-wise "
-            "modeled activation maps from coordinates. "
-            "In this kernel method, each coordinate is convolved with a Gaussian kernel "
-            f"{fwhm_str}. "
-            "For voxels with overlapping kernels, the maximum value was retained."
-        )
-        return description
+        return f"An ALE kernel \\citep{eickhoff2012activation} was used to generate study-wise modeled activation maps from coordinates. In this kernel method, each coordinate is convolved with a Gaussian kernel {fwhm_str}. For voxels with overlapping kernels, the maximum value was retained."
 
 
 class KDAKernel(KernelTransformer):
@@ -396,11 +389,4 @@ class MKDAKernel(KDAKernel):
         str
             Description of the KernelTransformer.
         """
-        description = (
-            "An MKDA kernel \\citep{wager2007meta} was used to generate "
-            "study-wise modeled activation maps from coordinates. "
-            "In this kernel method, each coordinate is convolved with a sphere with a radius of "
-            f"{self.r} and a value of {self.value}. "
-            "For voxels with overlapping spheres, the maximum value was retained."
-        )
-        return description
+        return f"An MKDA kernel \\citep{wager2007meta} was used to generate study-wise modeled activation maps from coordinates. In this kernel method, each coordinate is convolved with a sphere with a radius of {self.r} and a value of {self.value}. For voxels with overlapping spheres, the maximum value was retained."

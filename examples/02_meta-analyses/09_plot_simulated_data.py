@@ -53,10 +53,7 @@ def analyze_and_plot(dset, ground_truth_foci=None, correct=True, return_cres=Fal
         # place red dots indicating the ground truth foci
         display.add_markers(ground_truth_foci)
 
-    if return_cres:
-        return fig, cres
-
-    return fig
+    return (fig, cres) if return_cres else fig
 
 
 ###############################################################################
@@ -124,14 +121,18 @@ fig.show()
 # is selected around the ground truth foci.
 
 _, perc_foci_dset = create_coordinate_dataset(
-    foci=ground_truth_foci[0:2], foci_percentage="50%", fwhm=10.0, sample_size=30, n_studies=30
+    foci=ground_truth_foci[:2],
+    foci_percentage="50%",
+    fwhm=10.0,
+    sample_size=30,
+    n_studies=30,
 )
 
 ###############################################################################
 # Analyze and plot the 50% foci dataset
 # -----------------------------------------------------------------------------
 
-fig = analyze_and_plot(perc_foci_dset, ground_truth_foci[0:2])
+fig = analyze_and_plot(perc_foci_dset, ground_truth_foci[:2])
 fig.show()
 
 ###############################################################################

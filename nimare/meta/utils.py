@@ -205,9 +205,8 @@ def compute_ale_ma(mask, ijks, kernel=None, exp_idx=None, sample_sizes=None, use
     elif sample_sizes is not None:
         if not isinstance(sample_sizes, int):
             raise ValueError("If use_dict is False, sample_sizes provided must be integer.")
-    else:
-        if kernel is None:
-            raise ValueError("3D array of smoothing kernel must be provided.")
+    elif kernel is None:
+        raise ValueError("3D array of smoothing kernel must be provided.")
 
     if exp_idx is None:
         exp_idx = np.ones(len(ijks))
@@ -285,9 +284,7 @@ def compute_ale_ma(mask, ijks, kernel=None, exp_idx=None, sample_sizes=None, use
     coords = np.vstack((exp.flatten(), np.hstack(all_coords)))
     data = np.hstack(all_data).flatten()
 
-    kernel_data = sparse.COO(coords, data, shape=kernel_shape)
-
-    return kernel_data
+    return sparse.COO(coords, data, shape=kernel_shape)
 
 
 def get_ale_kernel(img, sample_size=None, fwhm=None):
@@ -326,13 +323,7 @@ def get_ale_kernel(img, sample_size=None, fwhm=None):
 
 def _get_last_bin(arr1d):
     """Index the last location in a 1D array with a non-zero value."""
-    if np.any(arr1d):
-        last_bin = np.where(arr1d)[0][-1]
-
-    else:
-        last_bin = 0
-
-    return last_bin
+    return np.where(arr1d)[0][-1] if np.any(arr1d) else 0
 
 
 def _calculate_cluster_measures(arr3d, threshold, conn, tail="upper"):
@@ -381,9 +372,5 @@ def _calculate_cluster_measures(arr3d, threshold, conn, tail="upper"):
 
     # Cluster size-based inference
     clust_sizes = clust_sizes[1:]  # First cluster is zeros in matrix
-    if clust_sizes.size:
-        max_size = np.max(clust_sizes)
-    else:
-        max_size = 0
-
+    max_size = np.max(clust_sizes) if clust_sizes.size else 0
     return max_size, max_mass

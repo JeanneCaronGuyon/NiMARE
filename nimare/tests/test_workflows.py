@@ -139,14 +139,14 @@ def test_cbma_workflow_smoke(
             filename = f"{imgtype}.nii.gz"
             outpath = op.join(tmpdir, filename)
             # For ALE maps are None
-            if not cres.maps[imgtype] is None:
+            if cres.maps[imgtype] is not None:
                 assert op.isfile(outpath)
 
         for tabletype in cres.tables.keys():
             filename = f"{tabletype}.tsv"
             outpath = op.join(tmpdir, filename)
             # For ALE tables are None
-            if not cres.tables[tabletype] is None:
+            if cres.tables[tabletype] is not None:
                 assert op.isfile(outpath)
 
 

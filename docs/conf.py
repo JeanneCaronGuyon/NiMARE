@@ -74,7 +74,7 @@ master_doc = "index"
 
 # General information about the project.
 project = "NiMARE"
-copyright = "2018-" + datetime.today().strftime("%Y") + ", NiMARE developers"
+copyright = "2018-" + datetime.now().strftime("%Y") + ", NiMARE developers"
 author = "NiMARE developers"
 
 # The version info for the project you're documenting, acts as replacement for
@@ -162,7 +162,7 @@ linkcode_resolve = make_linkcode_resolve(
 # intersphinx
 # -----------------------------------------------------------------------------
 _python_version_str = "{0.major}.{0.minor}".format(sys.version_info)
-_python_doc_base = "https://docs.python.org/" + _python_version_str
+_python_doc_base = f"https://docs.python.org/{_python_version_str}"
 intersphinx_mapping = {
     "python": (_python_doc_base, None),
     "numpy": ("https://numpy.org/doc/stable/", (None, "./_intersphinx/numpy-objects.inv")),
@@ -236,7 +236,7 @@ def generate_example_rst(app, what, name, obj, options, lines):
     folder = os.path.join(app.srcdir, "generated")
     if not os.path.isdir(folder):
         os.makedirs(folder)
-    examples_path = os.path.join(app.srcdir, "generated", "%s.examples" % name)
+    examples_path = os.path.join(app.srcdir, "generated", f"{name}.examples")
     if not os.path.exists(examples_path):
         # touch file
         open(examples_path, "w").close()

@@ -189,8 +189,10 @@ def _longify(df):
         else:
             aliases = [row["name"]]
 
-        for alias in aliases:
-            rows.append([row["id"], row["name"].lower(), alias.lower()])
+        rows.extend(
+            [row["id"], row["name"].lower(), alias.lower()]
+            for alias in aliases
+        )
     out_df = pd.DataFrame(columns=["id", "name", "alias"], data=rows)
     out_df = out_df.replace("", np.nan)
     return out_df
@@ -222,8 +224,7 @@ def _gen_alt_forms(term):
     if "(" in term:
         prefix = term[term.find("(") + 1 : term.find(")")]
         temp_term = term.replace(f"({prefix})", "").replace("  ", " ")
-        alt_forms.append(temp_term)
-        alt_forms.append(f"{prefix} {temp_term}")
+        alt_forms.extend((temp_term, f"{prefix} {temp_term}"))
     else:
         prefix = ""
 

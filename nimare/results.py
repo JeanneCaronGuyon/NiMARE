@@ -212,7 +212,7 @@ class MetaResult(NiMAREBase):
 
     def copy(self):
         """Return copy of result object."""
-        new = MetaResult(
+        return MetaResult(
             estimator=self.estimator,
             corrector=self.corrector,
             diagnostics=self.diagnostics,
@@ -221,4 +221,3 @@ class MetaResult(NiMAREBase):
             tables=copy.deepcopy(self.tables),
             description=self.description_,
         )
-        return new

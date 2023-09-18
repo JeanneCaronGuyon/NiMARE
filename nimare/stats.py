@@ -43,8 +43,7 @@ def one_way(data, n):
     nt_exp = n - t_exp
     t_mss = (term - t_exp) ** 2 / t_exp
     nt_mss = (no_term - nt_exp) ** 2 / nt_exp
-    chi2 = t_mss + nt_mss
-    return chi2
+    return t_mss + nt_mss
 
 
 def two_way(cells):
@@ -105,8 +104,7 @@ def pearson(x, y):
     datam = data - ms
     datass = np.sqrt(np.sum(datam**2, axis=1))
     temp = np.dot(datam[1:], datam[0].T)
-    rs = temp / (datass[1:] * datass[0])
-    return rs
+    return temp / (datass[1:] * datass[0])
 
 
 def null_to_p(test_value, null_array, tail="two", symmetric=False):

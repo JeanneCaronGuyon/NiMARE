@@ -18,16 +18,16 @@ def test_ImageTransformer(testdata_ibma):
     assert z_files[:-1] == new_z_files[:-1]
     # new z statistic map should have 3 dimensions
     assert len(nib.load(new_z_files[-1]).shape) == 3
-    assert all([nzf is not None for nzf in new_z_files])
+    assert all(nzf is not None for nzf in new_z_files)
 
     varcope_files = dset.images["varcope"].tolist()
     varcope_p_transformer = transforms.ImageTransformer(target=["varcope", "p"])
     new_dset = varcope_p_transformer.transform(dset)
     new_varcope_files = new_dset.images["varcope"].tolist()
-    assert not all([isinstance(vf, str) for vf in varcope_files])
-    assert all([isinstance(vf, str) for vf in new_varcope_files])
+    assert not all(isinstance(vf, str) for vf in varcope_files)
+    assert all(isinstance(vf, str) for vf in new_varcope_files)
     new_p_files = new_dset.images["p"].tolist()
-    assert all([isinstance(pf, str) for pf in new_p_files])
+    assert all(isinstance(pf, str) for pf in new_p_files)
 
 
 def test_transform_images(testdata_ibma):
@@ -41,15 +41,15 @@ def test_transform_images(testdata_ibma):
     assert z_files[:-1] == new_z_files[:-1]
     # new z statistic map should have 3 dimensions
     assert len(nib.load(new_z_files[-1]).shape) == 3
-    assert all([nzf is not None for nzf in new_z_files])
+    assert all(nzf is not None for nzf in new_z_files)
 
     varcope_files = dset.images["varcope"].tolist()
     new_images = transforms.transform_images(
         dset.images, target="varcope", masker=dset.masker, metadata_df=dset.metadata
     )
     new_varcope_files = new_images["varcope"].tolist()
-    assert not all([isinstance(vf, str) for vf in varcope_files])
-    assert all([isinstance(vf, str) for vf in new_varcope_files])
+    assert not all(isinstance(vf, str) for vf in varcope_files)
+    assert all(isinstance(vf, str) for vf in new_varcope_files)
 
 
 def test_sample_sizes_to_dof():
@@ -138,8 +138,7 @@ def test_images_to_coordinates(tmp_path, caplog, testdata_ibma, kwargs, drop_dat
     # because there were no images to generate coordinates
     studies_without_coordinates = []
     for msg in caplog.messages:
-        match = NO_OUTPUT_PATTERN.match(msg)
-        if match:
+        if match := NO_OUTPUT_PATTERN.match(msg):
             studies_without_coordinates.append(
                 match.group(1) if match.group(1) else match.group(2)
             )

@@ -160,18 +160,7 @@ class MKDADensity(CBMAEstimator):
         else:
             null_method_str = "an approximate null distribution"
 
-        description = (
-            "A multilevel kernel density (MKDA) meta-analysis \\citep{wager2007meta} was "
-            "performed was performed with NiMARE "
-            f"{__version__} "
-            "(RRID:SCR_017398; \\citealt{Salo2023}), using a(n) "
-            f"{self.kernel_transformer.__class__.__name__.replace('Kernel', '')} kernel. "
-            f"{self.kernel_transformer._generate_description()} "
-            f"Summary statistics (OF values) were converted to p-values using {null_method_str}. "
-            f"The input dataset included {self.inputs_['coordinates'].shape[0]} foci from "
-            f"{len(self.inputs_['id'])} experiments."
-        )
-        return description
+        return f"A multilevel kernel density (MKDA) meta-analysis \\citep{wager2007meta} was performed was performed with NiMARE {__version__} (RRID:SCR_017398; \\citealt{Salo2023}), using a(n) {self.kernel_transformer.__class__.__name__.replace('Kernel', '')} kernel. {self.kernel_transformer._generate_description()} Summary statistics (OF values) were converted to p-values using {null_method_str}. The input dataset included {self.inputs_['coordinates'].shape[0]} foci from {len(self.inputs_['id'])} experiments."
 
     def _compute_weights(self, ma_values):
         """Determine experiment-wise weights per the conventional MKDA approach."""
@@ -368,24 +357,7 @@ class MKDAChi2(PairwiseCBMAEstimator):
         self.prior = prior
 
     def _generate_description(self):
-        description = (
-            "A multilevel kernel density chi-squared analysis \\citep{wager2007meta} was "
-            "performed according to the same procedure as implemented in Neurosynth with NiMARE "
-            f"{__version__} "
-            "(RRID:SCR_017398; \\citealt{Salo2023}), "
-            f"using a(n) {self.kernel_transformer.__class__.__name__.replace('Kernel', '')} "
-            "kernel. "
-            f"{self.kernel_transformer._generate_description()} "
-            "This analysis calculated several measures. "
-            "The first dataset was evaluated for consistency of activation via a one-way "
-            "chi-square test. "
-            f"The first input dataset included {self.inputs_['coordinates1'].shape[0]} foci from "
-            f"{len(self.inputs_['id1'])} experiments. "
-            f"The second input dataset included {self.inputs_['coordinates2'].shape[0]} foci from "
-            f"{len(self.inputs_['id2'])} experiments."
-        )
-
-        return description
+        return f"A multilevel kernel density chi-squared analysis \\citep{wager2007meta} was performed according to the same procedure as implemented in Neurosynth with NiMARE {__version__} (RRID:SCR_017398; \\citealt{Salo2023}), using a(n) {self.kernel_transformer.__class__.__name__.replace('Kernel', '')} kernel. {self.kernel_transformer._generate_description()} This analysis calculated several measures. The first dataset was evaluated for consistency of activation via a one-way chi-square test. The first input dataset included {self.inputs_['coordinates1'].shape[0]} foci from {len(self.inputs_['id1'])} experiments. The second input dataset included {self.inputs_['coordinates2'].shape[0]} foci from {len(self.inputs_['id2'])} experiments."
 
     @use_memmap(LGR, n_files=2)
     def _fit(self, dataset1, dataset2):
@@ -1153,19 +1125,7 @@ class KDA(CBMAEstimator):
         else:
             null_method_str = "an approximate null distribution"
 
-        description = (
-            "A kernel density (KDA) meta-analysis \\citep{wager2007meta} was "
-            "performed was performed with NiMARE "
-            f"{__version__} "
-            "(RRID:SCR_017398; \\citealt{Salo2023}), "
-            f"using a(n) {self.kernel_transformer.__class__.__name__.replace('Kernel', '')} "
-            "kernel. "
-            f"{self.kernel_transformer._generate_description()} "
-            f"Summary statistics (OF values) were converted to p-values using {null_method_str}. "
-            f"The input dataset included {self.inputs_['coordinates'].shape[0]} foci from "
-            f"{len(self.inputs_['id'])} experiments."
-        )
-        return description
+        return f"A kernel density (KDA) meta-analysis \\citep{wager2007meta} was performed was performed with NiMARE {__version__} (RRID:SCR_017398; \\citealt{Salo2023}), using a(n) {self.kernel_transformer.__class__.__name__.replace('Kernel', '')} kernel. {self.kernel_transformer._generate_description()} Summary statistics (OF values) were converted to p-values using {null_method_str}. The input dataset included {self.inputs_['coordinates'].shape[0]} foci from {len(self.inputs_['id'])} experiments."
 
     def _compute_summarystat_est(self, ma_values):
         """Compute OF scores from data.

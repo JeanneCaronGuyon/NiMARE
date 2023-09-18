@@ -168,23 +168,7 @@ class CBMREstimator(Estimator):
         else:
             penalty_str = ""
 
-        if type(self.model).__name__ == "PoissonEstimator":
-            model_str = (
-                " Here, Poisson model \\citep{eisenberg1966general} is the most basic CBMR model. "
-                "It's based on the assumption that foci arise from a realisation of a (continues) "
-                "inhomogeneous Poisson process, so that the (discrete) voxel-wise foci counts will"
-                " be independently distributed as Poisson random variables, with rate equal to the"
-                " integral of (true, unobserved, continous) intensity function over each voxels"
-            )
-        elif type(self.model).__name__ == "NegativeBinomialEstimator":
-            model_str = (
-                " Negative Binomial (NB) model \\citep{barndorff1969negative} is a generalized "
-                "Poisson model with over-dispersion. "
-                "It's a more flexible model, but more difficult to estimate. In practice, foci"
-                "counts often display over-dispersion (the variance of response variable"
-                "substantially exceeeds the mean), which is not captured by Poisson model."
-            )
-        elif type(self.model).__name__ == "ClusteredNegativeBinomialEstimator":
+        if type(self.model).__name__ == "ClusteredNegativeBinomialEstimator":
             model_str = (
                 " Clustered NB model \\citep{geoffroy2001poisson} can also accommodate "
                 "over-dispersion in foci counts. "
@@ -194,6 +178,22 @@ class CBMREstimator(Estimator):
                 "and represent a shared effect over the entire brain for a given study."
             )
 
+        elif type(self.model).__name__ == "NegativeBinomialEstimator":
+            model_str = (
+                " Negative Binomial (NB) model \\citep{barndorff1969negative} is a generalized "
+                "Poisson model with over-dispersion. "
+                "It's a more flexible model, but more difficult to estimate. In practice, foci"
+                "counts often display over-dispersion (the variance of response variable"
+                "substantially exceeeds the mean), which is not captured by Poisson model."
+            )
+        elif type(self.model).__name__ == "PoissonEstimator":
+            model_str = (
+                " Here, Poisson model \\citep{eisenberg1966general} is the most basic CBMR model. "
+                "It's based on the assumption that foci arise from a realisation of a (continues) "
+                "inhomogeneous Poisson process, so that the (discrete) voxel-wise foci counts will"
+                " be independently distributed as Poisson random variables, with rate equal to the"
+                " integral of (true, unobserved, continous) intensity function over each voxels"
+            )
         model_description = (
             f"CBMR is a meta-regression framework that was performed with NiMARE {__version__}. "
             f"{type(self.model).__name__} model was used to model group-wise spatial intensity "
@@ -210,8 +210,7 @@ class CBMREstimator(Estimator):
             f"{len(self.inputs_['id'])} experiments."
         )
 
-        description = model_description + "\n" + optimization_description
-        return description
+        return model_description + "\n" + optimization_description
 
     def _preprocess_input(self, dataset):
         """Mask required input images using either the Dataset's mask or the Estimator's.
@@ -266,7 +265,7 @@ class CBMREstimator(Estimator):
                 valid_dset_annotations = dataset.annotations[
                     dataset.annotations["id"].isin(self.inputs_["id"])
                 ]
-                studies_by_group = dict()
+                studies_by_group = {}
                 if self.group_categories is None:
                     studies_by_group["Default"] = (
                         valid_dset_annotations["study_id"].unique().tolist()
@@ -278,23 +277,21 @@ class CBMREstimator(Estimator):
                             f"""Category_names: {self.group_categories} does not exist
                             in the dataset"""
                         )
-                    else:
-                        unique_groups = list(
-                            valid_dset_annotations[self.group_categories].unique()
-                        )
-                        for group in unique_groups:
-                            group_study_id_bool = (
-                                valid_dset_annotations[self.group_categories] == group
-                            )
-                            group_study_id = valid_dset_annotations.loc[group_study_id_bool][
-                                "study_id"
-                            ]
-                            studies_by_group[group.capitalize()] = group_study_id.unique().tolist()
-                elif isinstance(self.group_categories, list):
-                    missing_categories = set(self.group_categories) - set(
-                        dataset.annotations.columns
+                    unique_groups = list(
+                        valid_dset_annotations[self.group_categories].unique()
                     )
-                    if missing_categories:
+                    for group in unique_groups:
+                        group_study_id_bool = (
+                            valid_dset_annotations[self.group_categories] == group
+                        )
+                        group_study_id = valid_dset_annotations.loc[group_study_id_bool][
+                            "study_id"
+                        ]
+                        studies_by_group[group.capitalize()] = group_study_id.unique().tolist()
+                elif isinstance(self.group_categories, list):
+                    if missing_categories := set(self.group_categories) - set(
+                        dataset.annotations.columns
+                    ):
                         raise ValueError(
                             f"""Category_names: {missing_categories} do/does not exist in
                             the dataset."""
@@ -324,7 +321,7 @@ class CBMREstimator(Estimator):
                         self.moderators = [
                             self.moderators
                         ]  # convert moderators to a single-element list if it's a string
-                    moderators_by_group = dict()
+                    moderators_by_group = {}
                     for group in self.groups:
                         df_group = valid_dset_annotations.loc[
                             valid_dset_annotations["study_id"].isin(studies_by_group[group])
@@ -336,7 +333,7 @@ class CBMREstimator(Estimator):
                         moderators_by_group[group] = group_moderators
                     self.inputs_["moderators_by_group"] = moderators_by_group
 
-                foci_per_voxel, foci_per_study = dict(), dict()
+                foci_per_voxel, foci_per_study = {}, {}
                 for group in self.groups:
                     group_study_id = studies_by_group[group]
                     group_coordinates = dataset.coordinates.loc[
@@ -478,7 +475,7 @@ class CBMRInference(object):
 
         self.create_regular_expressions()
 
-        self.group_reference_dict, self.moderator_reference_dict = dict(), dict()
+        self.group_reference_dict, self.moderator_reference_dict = {}, {}
         for i in range(len(self.groups)):
             self.group_reference_dict[self.groups[i]] = i
         if self.moderators:
@@ -511,8 +508,7 @@ class CBMRInference(object):
         """
         operator = "(\\ ?(?P<operator>[+-]?)\\ ??)"
         for attr in ["groups", "moderators"]:
-            groups = getattr(self, attr)
-            if groups:
+            if groups := getattr(self, attr):
                 first_group, second_group = [
                     f"(?P<{order}>{'|'.join([re.escape(g) for g in groups])})"
                     for order in ["first", "second"]
@@ -521,7 +517,7 @@ class CBMRInference(object):
             else:
                 reg_expr = None
 
-            setattr(self, "{}_regular_expression".format(attr), reg_expr)
+            setattr(self, f"{attr}_regular_expression", reg_expr)
 
     @_check_fit
     def create_contrast(self, contrast_name, source="groups"):
@@ -722,8 +718,7 @@ class CBMRInference(object):
         """
         X = self.estimator.inputs_["coef_spline_bases"]
         n_brain_voxel, spatial_coef_dim = X.shape
-        con_group_count = 0
-        for con_group in self.t_con_groups:
+        for con_group_count, con_group in enumerate(self.t_con_groups):
             con_group_involved_index = np.where(np.any(con_group != 0, axis=0))[0].tolist()
             con_group_involved = [self.groups[i] for i in con_group_involved_index]
             n_con_group_involved = len(con_group_involved)
@@ -742,7 +737,7 @@ class CBMRInference(object):
             )
             cov_spatial_coef = np.linalg.inv(f_spatial_coef)
             # compute numerator: contrast vector * group-wise log spatial intensity
-            involved_log_intensity_per_voxel = list()
+            involved_log_intensity_per_voxel = []
             for group in con_group_involved:
                 group_log_intensity_per_voxel = np.log(
                     self.result.maps["spatialIntensity_group-" + group]
@@ -779,12 +774,11 @@ class CBMRInference(object):
                 involved_std_log_intensity = np.sqrt(involved_var_log_intensity)
                 # Conduct Wald test (Z test)
                 z_stats_spatial = contrast_log_intensity / involved_std_log_intensity
-                if n_con_group_involved == 1:  # one-tailed test
-                    p_vals_spatial = scipy.stats.norm.sf(z_stats_spatial)  # shape: (1, n_voxels)
-                else:  # two-tailed test
-                    p_vals_spatial = (
-                        scipy.stats.norm.sf(abs(z_stats_spatial)) * 2
-                    )  # shape: (1, n_voxels)
+                p_vals_spatial = (
+                    scipy.stats.norm.sf(z_stats_spatial)
+                    if n_con_group_involved == 1
+                    else (scipy.stats.norm.sf(abs(z_stats_spatial)) * 2)
+                )
             else:  # GLH tests (with multiple contrasts)
                 cov_log_intensity = np.empty(shape=(0, n_brain_voxel))
                 for k in range(n_con_group_involved):
@@ -835,7 +829,6 @@ class CBMRInference(object):
                     self.result.maps[f"chiSquare_GLH_groups_{con_group_count}"] = chi_sq_spatial
                 self.result.maps[f"p_GLH_groups_{con_group_count}"] = p_vals_spatial
                 self.result.maps[f"z_GLH_groups_{con_group_count}"] = z_stats_spatial
-            con_group_count += 1
 
     def _chi_square_log_intensity(
         self,
@@ -899,8 +892,7 @@ class CBMRInference(object):
         the existence of moderator effects and difference in moderator
         effects across multiple moderator effects.
         """
-        con_moderator_count = 0
-        for con_moderator in self.t_con_moderators:
+        for con_moderator_count, con_moderator in enumerate(self.t_con_moderators):
             m_con_moderator, _ = con_moderator.shape
             moderator_coef = self.result.tables["moderators_regression_coef"].to_numpy().T
             contrast_moderator_coef = np.matmul(con_moderator, moderator_coef)
@@ -956,4 +948,3 @@ class CBMRInference(object):
                 self.result.tables[f"z_GLH_moderators_{con_moderator_count}"] = pd.DataFrame(
                     data=np.array(z_stats_moderator), columns=["z"]
                 )
-            con_moderator_count += 1

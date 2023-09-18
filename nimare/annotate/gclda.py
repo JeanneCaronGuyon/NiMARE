@@ -376,7 +376,7 @@ class GCLDAModel(NiMAREBase):
             # variables tracking loglikely
             self.compute_log_likelihood()
 
-        for i in range(self.iter, n_iters):
+        for _ in range(self.iter, n_iters):
             self._update(loglikely_freq=loglikely_freq)
 
         # TODO: Handle this more elegantly
@@ -658,17 +658,9 @@ class GCLDAModel(NiMAREBase):
                     # Estimate Covariances
                     # Covariances are estimated independently
                     # Covariance for subregion 1
-                    if n_obs1 <= 1:
-                        c_hat1 = default_roi
-                    else:
-                        c_hat1 = np.cov(idx1_xyz, rowvar=False)
-
+                    c_hat1 = default_roi if n_obs1 <= 1 else np.cov(idx1_xyz, rowvar=False)
                     # Covariance for subregion 2
-                    if n_obs2 <= 1:
-                        c_hat2 = default_roi
-                    else:
-                        c_hat2 = np.cov(idx2_xyz, rowvar=False)
-
+                    c_hat2 = default_roi if n_obs2 <= 1 else np.cov(idx2_xyz, rowvar=False)
                     # Regularize the covariances, using the ratio of observations to
                     # sample_constant
                     d_c_1 = (n_obs1) / (n_obs1 + self.params["dobs"])

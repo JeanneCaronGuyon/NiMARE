@@ -46,7 +46,9 @@ class Studyset:
 
     def __str__(self):
         """Give useful information about the Studyset."""
-        return str(" ".join(["Studyset:", self.name, "::", f"studies: {len(self.studies)}"]))
+        return " ".join(
+            ["Studyset:", self.name, "::", f"studies: {len(self.studies)}"]
+        )
 
     @property
     def annotations(self):
@@ -235,7 +237,7 @@ class Study:
 
     def __str__(self):
         """My Simple representation."""
-        return str(" ".join([self.name, f"analyses: {len(self.analyses)}"]))
+        return " ".join([self.name, f"analyses: {len(self.analyses)}"])
 
     def get_analyses(self):
         """Collect Analyses from the Study.
@@ -300,8 +302,12 @@ class Analysis:
 
     def __str__(self):
         """My Simple representation."""
-        return str(
-            " ".join([self.name, f"images: {len(self.images)}", f"points: {len(self.points)}"])
+        return " ".join(
+            [
+                self.name,
+                f"images: {len(self.images)}",
+                f"points: {len(self.points)}",
+            ]
         )
 
     def to_dict(self):

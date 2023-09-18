@@ -65,12 +65,12 @@ def macm_workflow(
 
     LGR.info("Saving output maps...")
     cres.save_maps(output_dir=output_dir, prefix=prefix)
-    copyfile(dataset_file, os.path.join(output_dir, prefix + "input_dataset.json"))
+    copyfile(dataset_file, os.path.join(output_dir, f"{prefix}input_dataset.json"))
 
-    with open(os.path.join(output_dir, prefix + "boilerplate.txt"), "w") as fo:
+    with open(os.path.join(output_dir, f"{prefix}boilerplate.txt"), "w") as fo:
         fo.write(boilerplate)
 
-    with open(os.path.join(output_dir, prefix + "references.bib"), "w") as fo:
+    with open(os.path.join(output_dir, f"{prefix}references.bib"), "w") as fo:
         fo.write(bibtex)
 
     LGR.info("Workflow completed.")

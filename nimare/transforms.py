@@ -211,14 +211,16 @@ def resolve_transforms(target, available_data, masker):
         if temp is not None:
             available_data["z"] = temp
 
-        if ("z" in available_data.keys()) and ("sample_sizes" in available_data.keys()):
-            dof = sample_sizes_to_dof(available_data["sample_sizes"])
-            z = masker.transform(available_data["z"])
-            t = z_to_t(z, dof)
-            t = masker.inverse_transform(t.squeeze())
-            return t
-        else:
+        if (
+            "z" not in available_data.keys()
+            or "sample_sizes" not in available_data.keys()
+        ):
             return None
+        dof = sample_sizes_to_dof(available_data["sample_sizes"])
+        z = masker.transform(available_data["z"])
+        t = z_to_t(z, dof)
+        t = masker.inverse_transform(t.squeeze())
+        return t
     elif target == "beta":
         if "t" not in available_data.keys():
             # will return none given no transform/target exists
@@ -231,14 +233,16 @@ def resolve_transforms(target, available_data, masker):
             if temp is not None:
                 available_data["varcope"] = temp
 
-        if ("t" in available_data.keys()) and ("varcope" in available_data.keys()):
-            t = masker.transform(available_data["t"])
-            varcope = masker.transform(available_data["varcope"])
-            beta = t_and_varcope_to_beta(t, varcope)
-            beta = masker.inverse_transform(beta.squeeze())
-            return beta
-        else:
+        if (
+            "t" not in available_data.keys()
+            or "varcope" not in available_data.keys()
+        ):
             return None
+        t = masker.transform(available_data["t"])
+        varcope = masker.transform(available_data["varcope"])
+        beta = t_and_varcope_to_beta(t, varcope)
+        beta = masker.inverse_transform(beta.squeeze())
+        return beta
     elif target == "varcope":
         if "se" in available_data.keys():
             se = masker.transform(available_data["se"])
@@ -497,9 +501,9 @@ class StandardizeField(NiMAREBase):
                 dataset.annotations[metadata_name].astype(float),
             ):
                 numerical_metadata.append(metadata_name)
-        if len(categorical_metadata) > 0:
+        if categorical_metadata:
             LGR.warning(f"Categorical metadata {categorical_metadata} can't be standardized.")
-        if len(numerical_metadata) == 0:
+        if not numerical_metadata:
             raise ValueError("No numerical metadata found.")
 
         moderators = dataset.annotations[numerical_metadata]
@@ -530,8 +534,7 @@ def sample_sizes_to_dof(sample_sizes):
         An estimate of degrees of freedom. Number of participants minus number
         of groups.
     """
-    dof = np.sum(sample_sizes) - len(sample_sizes)
-    return dof
+    return np.sum(sample_sizes) - len(sample_sizes)
 
 
 def sample_sizes_to_sample_size(sample_sizes):
@@ -549,8 +552,7 @@ def sample_sizes_to_sample_size(sample_sizes):
     sample_size : int
         Total (sum) sample size.
     """
-    sample_size = np.sum(sample_sizes)
-    return sample_size
+    return np.sum(sample_sizes)
 
 
 def sd_to_varcope(sd, sample_size):
@@ -571,8 +573,7 @@ def sd_to_varcope(sd, sample_size):
         Sampling variance of the parameter
     """
     se = sd / np.sqrt(sample_size)
-    varcope = se_to_varcope(se)
-    return varcope
+    return se_to_varcope(se)
 
 
 def se_to_varcope(se):
@@ -594,8 +595,7 @@ def se_to_varcope(se):
     -----
     Sampling variance is standard error squared.
     """
-    varcope = se**2
-    return varcope
+    return se**2
 
 
 def samplevar_dataset_to_varcope(samplevar_dataset, sample_size):
@@ -621,8 +621,7 @@ def samplevar_dataset_to_varcope(samplevar_dataset, sample_size):
     -----
     Sampling variance is sample variance divided by sample size.
     """
-    varcope = samplevar_dataset / sample_size
-    return varcope
+    return samplevar_dataset / sample_size
 
 
 def t_and_varcope_to_beta(t, varcope):
@@ -642,8 +641,7 @@ def t_and_varcope_to_beta(t, varcope):
     beta : array_like
         Parameter estimates
     """
-    beta = t * np.sqrt(varcope)
-    return beta
+    return t * np.sqrt(varcope)
 
 
 def t_and_beta_to_varcope(t, beta):
@@ -663,8 +661,7 @@ def t_and_beta_to_varcope(t, beta):
     varcope : array_like
         Sampling variance of the parameter
     """
-    varcope = (beta / t) ** 2
-    return varcope
+    return (beta / t) ** 2
 
 
 def z_to_p(z, tail="two"):

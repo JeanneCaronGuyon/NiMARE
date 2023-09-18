@@ -72,9 +72,7 @@ class CBMAEstimator(Estimator):
         # Identify any kwargs
         kernel_args = {k: v for k, v in kwargs.items() if k.startswith("kernel__")}
 
-        # Flag any extraneous kwargs
-        other_kwargs = dict(set(kwargs.items()) - set(kernel_args.items()))
-        if other_kwargs:
+        if other_kwargs := dict(set(kwargs.items()) - set(kernel_args.items())):
             LGR.warning(f"Unused keyword arguments found: {tuple(other_kwargs.items())}")
 
         # Get kernel transformer
@@ -210,13 +208,11 @@ class CBMAEstimator(Estimator):
         """
         LGR.debug(f"Generating MA maps from coordinates ({coords_key}).")
 
-        ma_maps = self.kernel_transformer.transform(
+        return self.kernel_transformer.transform(
             self.inputs_[coords_key],
             masker=self.masker,
             return_type="sparse",
         )
-
-        return ma_maps
 
     def _compute_summarystat(self, data):
         """Compute summary statistics from data.
@@ -790,6 +786,15 @@ class CBMAEstimator(Estimator):
                 "z_level-voxel": z_vfwe_values,
             }
 
+            description = (
+                "Family-wise error correction was performed using a voxel-level Monte Carlo "
+                "procedure. "
+                "In this procedure, null datasets are generated in which dataset coordinates are "
+                "substituted with coordinates randomly drawn from the meta-analysis mask, and "
+                "the maximum summary statistic is retained. "
+                f"This procedure was repeated {n_iters} times to build a null distribution of "
+                "summary statistics."
+            )
         else:
             # Return unthresholded value images
             maps = {
@@ -801,17 +806,6 @@ class CBMAEstimator(Estimator):
                 "z_desc-mass_level-cluster": z_cmfwe_values,
             }
 
-        if vfwe_only:
-            description = (
-                "Family-wise error correction was performed using a voxel-level Monte Carlo "
-                "procedure. "
-                "In this procedure, null datasets are generated in which dataset coordinates are "
-                "substituted with coordinates randomly drawn from the meta-analysis mask, and "
-                "the maximum summary statistic is retained. "
-                f"This procedure was repeated {n_iters} times to build a null distribution of "
-                "summary statistics."
-            )
-        else:
             description = (
                 "Family-wise error rate correction was performed using a Monte Carlo procedure. "
                 "In this procedure, null datasets are generated in which dataset coordinates are "

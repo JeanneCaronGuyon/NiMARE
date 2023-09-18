@@ -48,9 +48,9 @@ class IBMAEstimator(Estimator):
         # Identify any kwargs
         resample_kwargs = {k: v for k, v in kwargs.items() if k.startswith("resample__")}
 
-        # Flag any extraneous kwargs
-        other_kwargs = dict(set(kwargs.items()) - set(resample_kwargs.items()))
-        if other_kwargs:
+        if other_kwargs := dict(
+            set(kwargs.items()) - set(resample_kwargs.items())
+        ):
             LGR.warn(f"Unused keyword arguments found: {tuple(other_kwargs.items())}")
 
         # Update the default resampling parameters
@@ -112,10 +112,10 @@ class IBMAEstimator(Estimator):
         # Further reduce image-based inputs to remove "bad" voxels
         # (voxels with zeros or NaNs in any studies)
         if "aggressive_mask" in self.inputs_.keys():
-            n_bad_voxels = (
-                self.inputs_["aggressive_mask"].size - self.inputs_["aggressive_mask"].sum()
-            )
-            if n_bad_voxels:
+            if n_bad_voxels := (
+                self.inputs_["aggressive_mask"].size
+                - self.inputs_["aggressive_mask"].sum()
+            ):
                 LGR.warning(
                     f"Masking out {n_bad_voxels} additional voxels. "
                     "The updated masker is available in the Estimator.masker attribute."
@@ -165,13 +165,7 @@ class Fishers(IBMAEstimator):
     _required_inputs = {"z_maps": ("image", "z")}
 
     def _generate_description(self):
-        description = (
-            f"An image-based meta-analysis was performed with NiMARE {__version__} "
-            "(RRID:SCR_017398; \\citealt{Salo2023}) on "
-            f"{len(self.inputs_['id'])} z-statistic images using the Fisher "
-            "combined probability method \\citep{fisher1946statistical}."
-        )
-        return description
+        return f"An image-based meta-analysis was performed with NiMARE {__version__} (RRID:SCR_017398; \\citealt{Salo2023}) on {len(self.inputs_['id'])} z-statistic images using the Fisher combined probability method \\citep{fisher1946statistical}."
 
     def _fit(self, dataset):
         self.dataset = dataset
@@ -365,14 +359,7 @@ class WeightedLeastSquares(IBMAEstimator):
         self.tau2 = tau2
 
     def _generate_description(self):
-        description = (
-            f"An image-based meta-analysis was performed with NiMARE {__version__} "
-            "(RRID:SCR_017398; \\citealt{Salo2023}), on "
-            f"{len(self.inputs_['id'])} beta images using the Weighted Least Squares approach "
-            "\\citep{brockwell2001comparison}, "
-            f"with an a priori tau-squared value of {self.tau2} defined across all voxels."
-        )
-        return description
+        return f"An image-based meta-analysis was performed with NiMARE {__version__} (RRID:SCR_017398; \\citealt{Salo2023}), on {len(self.inputs_['id'])} beta images using the Weighted Least Squares approach \\citep{brockwell2001comparison}, with an a priori tau-squared value of {self.tau2} defined across all voxels."
 
     def _fit(self, dataset):
         self.dataset = dataset
@@ -550,14 +537,7 @@ class Hedges(IBMAEstimator):
     _required_inputs = {"beta_maps": ("image", "beta"), "varcope_maps": ("image", "varcope")}
 
     def _generate_description(self):
-        description = (
-            f"An image-based meta-analysis was performed with NiMARE {__version__} "
-            "(RRID:SCR_017398; \\citealt{Salo2023}), on "
-            f"{len(self.inputs_['id'])} beta and variance images using the Hedges "
-            "method \\citep{hedges2014statistical}, in which tau-squared is estimated on a "
-            "voxel-wise basis."
-        )
-        return description
+        return f"An image-based meta-analysis was performed with NiMARE {__version__} (RRID:SCR_017398; \\citealt{Salo2023}), on {len(self.inputs_['id'])} beta and variance images using the Hedges method \\citep{hedges2014statistical}, in which tau-squared is estimated on a voxel-wise basis."
 
     def _fit(self, dataset):
         self.dataset = dataset
@@ -658,14 +638,7 @@ class SampleSizeBasedLikelihood(IBMAEstimator):
         self.method = method
 
     def _generate_description(self):
-        description = (
-            f"An image-based meta-analysis was performed with NiMARE {__version__} "
-            "(RRID:SCR_017398; \\citealt{Salo2023}), on "
-            f"{len(self.inputs_['id'])} beta images using sample size-based "
-            "maximum likelihood estimation, in which tau-squared and sigma-squared are estimated "
-            "on a voxel-wise basis."
-        )
-        return description
+        return f"An image-based meta-analysis was performed with NiMARE {__version__} (RRID:SCR_017398; \\citealt{Salo2023}), on {len(self.inputs_['id'])} beta images using sample size-based maximum likelihood estimation, in which tau-squared and sigma-squared are estimated on a voxel-wise basis."
 
     def _fit(self, dataset):
         self.dataset = dataset
@@ -770,14 +743,7 @@ class VarianceBasedLikelihood(IBMAEstimator):
         self.method = method
 
     def _generate_description(self):
-        description = (
-            f"An image-based meta-analysis was performed with NiMARE {__version__} "
-            "(RRID:SCR_017398; \\citealt{Salo2023}), on "
-            f"{len(self.inputs_['id'])} beta and variance images using "
-            "variance-based maximum likelihood estimation, in which tau-squared is estimated on a "
-            "voxel-wise basis."
-        )
-        return description
+        return f"An image-based meta-analysis was performed with NiMARE {__version__} (RRID:SCR_017398; \\citealt{Salo2023}), on {len(self.inputs_['id'])} beta and variance images using variance-based maximum likelihood estimation, in which tau-squared is estimated on a voxel-wise basis."
 
     def _fit(self, dataset):
         self.dataset = dataset

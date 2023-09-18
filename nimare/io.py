@@ -198,17 +198,16 @@ def convert_neurosynth_to_dict(
 
     for sid, study_metadata in metadata_df.iterrows():
         coord_inds = np.where(coords_df["id"].values == sid)[0]
-        study_dict = {}
-        study_dict["metadata"] = {}
+        study_dict = {"metadata": {}}
         study_dict["metadata"]["authors"] = study_metadata.get("authors", "n/a")
         study_dict["metadata"]["journal"] = study_metadata.get("journal", "n/a")
         study_dict["metadata"]["year"] = study_metadata.get("year", "n/a")
         study_dict["metadata"]["title"] = study_metadata.get("title", "n/a")
-        study_dict["contrasts"] = {}
-        study_dict["contrasts"]["1"] = {}
+        study_dict["contrasts"] = {"1": {}}
         # Duplicate metadata across study and contrast levels
-        study_dict["contrasts"]["1"]["metadata"] = {}
-        study_dict["contrasts"]["1"]["metadata"]["authors"] = study_metadata.get("authors", "n/a")
+        study_dict["contrasts"]["1"]["metadata"] = {
+            "authors": study_metadata.get("authors", "n/a")
+        }
         study_dict["contrasts"]["1"]["metadata"]["journal"] = study_metadata.get("journal", "n/a")
         study_dict["contrasts"]["1"]["metadata"]["year"] = study_metadata.get("year", "n/a")
         study_dict["contrasts"]["1"]["metadata"]["title"] = study_metadata.get("title", "n/a")
@@ -362,7 +361,7 @@ def convert_sleuth_to_dict(text_file):
         for tf in text_file:
             temp_dict = convert_sleuth_to_dict(tf)
             for sid in temp_dict.keys():
-                if sid in dset_dict.keys():
+                if sid in dset_dict:
                     dset_dict[sid]["contrasts"] = {
                         **dset_dict[sid]["contrasts"],
                         **temp_dict[sid]["contrasts"],
@@ -400,9 +399,8 @@ def convert_sleuth_to_dict(text_file):
     split_idx = zip(start_idx, end_idx)
 
     dset_dict = {}
-    for i_exp, exp_idx in enumerate(split_idx):
-        exp_data = data[exp_idx[0] : exp_idx[1]]
-        if exp_data:
+    for exp_idx in split_idx:
+        if exp_data := data[exp_idx[0] : exp_idx[1]]:
             header_idx = [i for i in range(len(exp_data)) if exp_data[i].startswith("//")]
             study_info_idx = header_idx[:-1]
             n_idx = header_idx[-1]
@@ -620,9 +618,7 @@ def convert_neurovault_to_dataset(
                 ]
             ) = [sample_size]
 
-    dataset = Dataset(dataset_dict, **dset_kwargs)
-
-    return dataset
+    return Dataset(dataset_dict, **dset_kwargs)
 
 
 def _resolve_sample_size(sample_sizes):

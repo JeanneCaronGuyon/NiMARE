@@ -172,8 +172,7 @@ def vox2mm(ijk, affine):
     From here:
     http://blog.chrisgorgolewski.org/2014/12/how-to-convert-between-voxel-and-mm.html
     """
-    xyz = nib.affines.apply_affine(affine, ijk)
-    return xyz
+    return nib.affines.apply_affine(affine, ijk)
 
 
 def mm2vox(xyz, affine):
@@ -201,8 +200,7 @@ def mm2vox(xyz, affine):
     From here:
     http://blog.chrisgorgolewski.org/2014/12/how-to-convert-between-voxel-and-mm.html
     """
-    ijk = nib.affines.apply_affine(np.linalg.inv(affine), xyz).astype(int)
-    return ijk
+    return nib.affines.apply_affine(np.linalg.inv(affine), xyz).astype(int)
 
 
 def tal2mni(coords):
@@ -509,7 +507,7 @@ def _validate_images_df(image_df):
     file_cols = []
     for col in image_df.columns:
         vals = [v for v in image_df[col].values if isinstance(v, str)]
-        fc = any([any([vs in v for vs in valid_suffixes]) for v in vals])
+        fc = any(any(vs in v for vs in valid_suffixes) for v in vals)
         if fc:
             file_cols.append(col)
 
@@ -585,10 +583,7 @@ def _try_prepend(value, prefix):
 
     If not a string, will just return the original value.
     """
-    if isinstance(value, str):
-        return op.join(prefix, value)
-    else:
-        return value
+    return op.join(prefix, value) if isinstance(value, str) else value
 
 
 def _find_stem(arr):
@@ -1054,16 +1049,15 @@ def find_braces(string):
         if char == "{":
             pstack.append(idx)
         elif char == "}":
-            if len(pstack) == 0:
+            if not pstack:
                 raise IndexError(f"No matching closing parens at: {idx}")
 
             toret[pstack.pop()] = idx
 
-    if len(pstack) > 0:
+    if pstack:
         raise IndexError(f"No matching opening parens at: {pstack.pop()}")
 
-    toret = list(toret.items())
-    return toret
+    return list(toret.items())
 
 
 def reduce_idx(idx_list):
@@ -1123,8 +1117,7 @@ def index_bibtex_identifiers(string, idx_list):
     df = pd.DataFrame(at_idx, columns=["real_start", "false_start"])
     df2 = pd.DataFrame(idx_list, columns=["false_start", "end"])
     df = pd.merge(left=df, right=df2, left_on="false_start", right_on="false_start")
-    new_idx_list = list(zip(df.real_start, df.end))
-    return new_idx_list
+    return list(zip(df.real_start, df.end))
 
 
 def find_citations(description):
@@ -1147,8 +1140,7 @@ def find_citations(description):
     inparen_citations = re.findall(r"\\citealt{([a-zA-Z0-9,/\.]+)}", description)
     all_citations = ",".join(paren_citations + intext_citations + inparen_citations)
     all_citations = all_citations.split(",")
-    all_citations = sorted(list(set(all_citations)))
-    return all_citations
+    return sorted(list(set(all_citations)))
 
 
 def reduce_references(citations, reference_list):
@@ -1224,9 +1216,7 @@ def load_nimads(studyset, annotation=None):
     elif isinstance(studyset, str):
         with open(studyset, "r") as f:
             studyset = Studyset(json.load(f))
-    elif isinstance(studyset, Studyset):
-        pass
-    else:
+    elif not isinstance(studyset, Studyset):
         raise ValueError(
             "studyset must be: a dictionary, a path to a json file, or studyset object"
         )

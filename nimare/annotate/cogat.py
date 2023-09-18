@@ -195,8 +195,7 @@ def expand_counts(counts_df, rel_df=None, weights=None):
     counts_columns = counts_df.columns.tolist()
     weights_columns = weights_df.columns.tolist()
     w_not_c = set(weights_columns) - set(counts_columns)
-    c_not_w = set(counts_columns) - set(weights_columns)
-    if c_not_w:
+    if c_not_w := set(counts_columns) - set(weights_columns):
         raise Exception(f"Columns found in counts but not weights: {', '.join(c_not_w)}")
 
     for col in w_not_c:
@@ -208,5 +207,6 @@ def expand_counts(counts_df, rel_df=None, weights=None):
     counts = counts_df.values
     weights = weights_df.values
     weighted = np.dot(counts, weights)
-    weighted_df = pd.DataFrame(index=counts_df.index, columns=counts_df.columns, data=weighted)
-    return weighted_df
+    return pd.DataFrame(
+        index=counts_df.index, columns=counts_df.columns, data=weighted
+    )

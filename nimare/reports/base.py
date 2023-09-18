@@ -523,12 +523,12 @@ class Report:
     def generate_report(self):
         """Once the Report has been indexed, the final HTML can be generated."""
         boilerplate = []
-        boiler_idx = 0
-
         if hasattr(self.results, "description_"):
             text = self.results.description_
             references = self.results.bibtex_
             text = textwrap.fill(text, 99)
+
+            boiler_idx = 0
 
             boilerplate.append(
                 (

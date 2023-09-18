@@ -284,7 +284,7 @@ class CorrelationDecoder(Decoder):
             features.append(feature)
             images.append(np.squeeze(self.masker.transform(img)))
 
-        maps = {feature: image for feature, image in zip(features, images)}
+        maps = dict(zip(features, images))
         self.results_ = MetaResult(self, mask=self.masker, maps=maps)
 
     def transform(self, img):

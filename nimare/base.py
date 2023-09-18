@@ -52,16 +52,10 @@ class NiMAREBase(metaclass=ABCMeta):
         # Convert to strings
         param_strs = []
         for k, v in params.items():
-            if isinstance(v, str):
-                # Wrap string values in single quotes
-                param_str = f"{k}='{v}'"
-            else:
-                # Keep everything else as-is based on its own repr
-                param_str = f"{k}={v}"
+            param_str = f"{k}='{v}'" if isinstance(v, str) else f"{k}={v}"
             param_strs.append(param_str)
 
-        rep = f"{self.__class__.__name__}({', '.join(param_strs)})"
-        return rep
+        return f"{self.__class__.__name__}({', '.join(param_strs)})"
 
     @classmethod
     def _get_param_names(cls):
@@ -108,12 +102,12 @@ class NiMAREBase(metaclass=ABCMeta):
         params : :obj:`dict`
             Parameter names mapped to their values.
         """
-        out = dict()
+        out = {}
         for key in self._get_param_names():
             value = getattr(self, key, None)
             if deep and hasattr(value, "get_params"):
                 deep_items = value.get_params().items()
-                out.update((key + "__" + k, val) for k, val in deep_items)
+                out |= ((f"{key}__{k}", val) for k, val in deep_items)
             out[key] = value
         return out
 

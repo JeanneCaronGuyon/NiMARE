@@ -194,7 +194,7 @@ class BrainMapDecoder(Decoder):
             label: 'pForward', 'zForward', 'likelihoodForward', 'pReverse',
             'zReverse', and 'probReverse'.
         """
-        results = brainmap_decode(
+        return brainmap_decode(
             self.inputs_["coordinates"],
             self.inputs_["annotations"],
             ids=ids,
@@ -204,8 +204,6 @@ class BrainMapDecoder(Decoder):
             u=self.u,
             correction=self.correction,
         )
-
-        return results
 
 
 def brainmap_decode(
@@ -479,7 +477,7 @@ class NeurosynthDecoder(Decoder):
             label: 'pForward', 'zForward', 'probForward', 'pReverse', 'zReverse',
             and 'probReverse'.
         """
-        results = neurosynth_decode(
+        return neurosynth_decode(
             self.inputs_["coordinates"],
             self.inputs_["annotations"],
             ids=ids,
@@ -490,7 +488,6 @@ class NeurosynthDecoder(Decoder):
             u=self.u,
             correction=self.correction,
         )
-        return results
 
 
 def neurosynth_decode(

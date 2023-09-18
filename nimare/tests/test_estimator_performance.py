@@ -1,4 +1,5 @@
 """Test estimator, kerneltransformer, and multiple comparisons corrector performance."""
+
 import os
 from contextlib import ExitStack as does_not_raise
 
@@ -15,10 +16,7 @@ from nimare.utils import mm2vox
 # set significance levels used for testing.
 ALPHA = 0.05
 
-if os.environ.get("CIRCLECI"):
-    N_CORES = 1
-else:
-    N_CORES = -1
+N_CORES = 1 if os.environ.get("CIRCLECI") else -1
 
 
 # PRECOMPUTED FIXTURES
@@ -168,7 +166,7 @@ def corr_small(request):
 def meta(simulatedata_cbma, meta_est, kern, meta_params):
     """Define estimator/kernel combinations for tests."""
     fwhm, (_, _) = simulatedata_cbma
-    if kern == kernel.KDAKernel or kern == kernel.MKDAKernel:
+    if kern in [kernel.KDAKernel, kernel.MKDAKernel]:
         kern = kern(r=fwhm / 2)
     else:
         kern = kern()
