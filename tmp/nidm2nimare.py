@@ -76,7 +76,7 @@ def create_dset_from_nidm(src_folder: Path, output_folder: Path):
         ddict[name] = {"contrasts": {}}
         ddict[name]["contrasts"]["1"] = {"coords": {}}
         ddict[name]["contrasts"]["1"]["coords"]["space"] = "MNI"
-        ddict[name]["contrasts"]["1"]["images"] = {"space": "MNI_2mm"}
+        ddict[name]["contrasts"]["1"]["images"] = {}
 
         # beta file
         files = glob(join(folder, "Contrast*.nii.gz"))
@@ -93,14 +93,15 @@ def create_dset_from_nidm(src_folder: Path, output_folder: Path):
         files = glob(join(folder, "ZStatistic*.nii.gz"))
         f = sorted(files)[0] if files else None
         ddict[name]["contrasts"]["1"]["images"]["z"] = f
-
+        
         # t file
-
-        # z file
         files = glob(join(folder, "TStatistic*.nii.gz"))
         f = sorted(files)[0] if files else None
         ddict[name]["contrasts"]["1"]["images"]["t"] = f
-
+        
+        # metadata 
+        ddict[name]["contrasts"]["1"]["metadata"] = {}
+        
         # sample size
         f = join(folder, "DesignMatrix.csv")
         if isfile(f):
@@ -108,7 +109,7 @@ def create_dset_from_nidm(src_folder: Path, output_folder: Path):
             n = [df.shape[0]]
         else:
             n = None
-        ddict[name]["contrasts"]["1"]["sample_sizes"] = n
+        ddict[name]["contrasts"]["1"]["metadata"]["sample_sizes"] = n
 
         # foci
         files = glob(join(folder, "ExcursionSet*.nii.gz"))
